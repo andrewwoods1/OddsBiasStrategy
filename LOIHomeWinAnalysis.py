@@ -85,7 +85,7 @@ X_train, X_test, y_train, y_test = train_test_split(df[['Int','AvgH','AvgD','Avg
                                                     df['HomeWin'], test_size=0.33, random_state=42)
 
 
-
+# Below code uses 2017 and onward as test data rather than random allocation as above
 #x_train = df[['Int','AvgH','AvgD','AvgA']].iloc[0:991,]
 #y_train = df['HomeWin'].iloc[0:991,]
 #
@@ -106,23 +106,23 @@ plt.ylim(0, 1)
 plt.show()
 
 
-bank = 1000
-bal = list()
 
 # Test whether betting according to logistic model would have made a profit
 
-X_test = X_test.reset_index()
+X_test_copy = X_test[X_test['MaxH'] < 1.5].reset_index()
+bank = 1000
+bal = list()
 
+#WIP
+probs = probs[]
 # match up the indexes to get this working
 for i in range(len(probs)):
-    print i
     bal.append(bank)
-    print bank
-    if probs[i][1] > X_test.ix[i,5]**-1:
-        stake = (((X_test.ix[i,5] - 1) * (probs[i][1]) - (1 - probs[i][1]))*float(bank))/float(X_test.ix[i,5] - 1)
+    if probs[i][1] > X_test_copy['MaxH'][i]**-1:
+        stake = (((X_test_copy['MaxH'][i] - 1) * (probs[i][1]) - (1 - probs[i][1]))*float(bank))/float(X_test_copy['MaxH'][i] - 1)
         print stake
-        if X_test['Res'][i] == 'H':
-            bank = bank + (X_test.ix[i,5] - 1)*stake
+        if X_test_copy['Res'][i] == 'H':
+            bank = bank + (X_test_copy['MaxH'][i] - 1)*stake
         else:
             bank = bank - stake
     else:
@@ -132,41 +132,6 @@ for i in range(len(probs)):
 
 
 #################################
-
-
-
-#Draws
-df['MinProbD'] = df['MaxD']**-1
-DrawMaxCat = pd.cut(df['MinProbD'][df['MaxD'] < 5],bins = 20)
-Res = df['Res'] == 'D'
-tab = pd.crosstab(DrawMaxCat,Res)
-tab['%'] = tab.ix[:,1]/(tab.ix[:,1] + tab.ix[:,0])
-
-
-p = sns.barplot(x = tab.index,y = tab.ix[:,2],color = 'blue')
-p.set_xticklabels(p.get_xticklabels(),rotation = 45)
-
-
-
-#Away
-df['MinProbA'] = df['MaxA']**-1
-AwayMaxCat = pd.cut(df['MinProbA'][df['MaxA'] < 5],bins = 20)
-Res = df['Res'] == 'A'
-tab = pd.crosstab(AwayMaxCat,Res)
-tab['%'] = tab.ix[:,1]/(tab.ix[:,1] + tab.ix[:,0])
-
-
-p = sns.barplot(x = tab.index,y = tab.ix[:,2],color = 'blue')
-p.set_xticklabels(p.get_xticklabels(),rotation = 45)
-
-
-
-
-# Look at team's home win probabilities over time
-df['Date'] = dt.datetime(df['Date'])
-
-
-ax = sns.tsplot(data = df[['Home','AvgH']],condition = 'Home')
 
 
 
