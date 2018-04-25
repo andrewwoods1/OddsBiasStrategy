@@ -81,8 +81,9 @@ from sklearn.model_selection import train_test_split
 df['HomeWin'] = df['Res']== 'H'
 df['Int'] = 1
 
+
 X_train, X_test, y_train, y_test = train_test_split(df[['Int','AvgH','AvgD','AvgA','MaxH','Res']],
-                                                    df['HomeWin'], test_size=0.33, random_state=42)
+                                                        df['HomeWin'], test_size=0.5, random_state = 42)
 
 
 # Below code uses 2017 and onward as test data rather than random allocation as above
@@ -91,6 +92,9 @@ X_train, X_test, y_train, y_test = train_test_split(df[['Int','AvgH','AvgD','Avg
 #
 #x_test = df[['Int','AvgH','AvgD','AvgA']].iloc[992:,]
 #y_test = df['HomeWin'].iloc[992:,]
+
+
+
 
 logreg = LogisticRegression()
 logreg.fit(X_train[['Int','AvgH','AvgD','AvgA']],y_train)
@@ -109,29 +113,92 @@ plt.show()
 
 # Test whether betting according to logistic model would have made a profit
 
-X_test_copy = X_test[X_test['MaxH'] < 1.5].reset_index()
+X_test_copy = X_test.reset_index()
 bank = 1000
 bal = list()
+stakes = list()
+kellys = list()
+returns = list()
 
-#WIP
-probs = probs[]
-# match up the indexes to get this working
 for i in range(len(probs)):
-    bal.append(bank)
-    if probs[i][1] > X_test_copy['MaxH'][i]**-1:
-        stake = (((X_test_copy['MaxH'][i] - 1) * (probs[i][1]) - (1 - probs[i][1]))*float(bank))/float(X_test_copy['MaxH'][i] - 1)
-        print stake
-        if X_test_copy['Res'][i] == 'H':
-            bank = bank + (X_test_copy['MaxH'][i] - 1)*stake
+    if (probs[i][1] > X_test_copy['MaxH'][i]**-1) & (X_test_copy['MaxH'][i] < 1.25):
+        bal.append(bank)
+        kelly = (((X_test_copy['MaxH'][i] - 1) * (probs[i][1]) - (1 - probs[i][1]))/float(X_test_copy['MaxH'][i] - 1))*0.2
+
+        if kelly < 1:
+            stake = kelly*bank
+            stakes.append(stake)
+            kellys.append(kelly)
+            if X_test_copy['Res'][i] == 'H':
+                bank = bank + (X_test_copy['MaxH'][i] - 1)*stake
+            else:
+                bank = bank - stake
         else:
-            bank = bank - stake
+            stake = 0.1 * bank
+            stakes.append(stake)
+            kellys.append(0.1)
+            if X_test_copy['Res'][i] == 'H':
+                bank = bank + (X_test_copy['MaxH'][i] - 1) * stake
+            else:
+                bank = bank - stake
+
     else:
         bank = bank
+returns.append(float(bank - 1000)/1000)
 
-#
 
 
 #################################
+
+
+#################################
+# Run for multiple test sets in a loop and calculate average returns
+
+returns = list()
+for rand in np.random.randint(1,1000,500):
+
+    df['HomeWin'] = df['Res']== 'H'
+    df['Int'] = 1
+
+
+    X_train, X_test, y_train, y_test = train_test_split(df[['Int','AvgH','AvgD','AvgA','MaxH','Res']],
+                                                            df['HomeWin'], test_size=0.5, random_state = rand)
+
+    logreg = LogisticRegression()
+    logreg.fit(X_train[['Int','AvgH','AvgD','AvgA']],y_train)
+
+    X_test_copy = X_test.reset_index()
+    bank = 1000
+    bal = list()
+    stakes = list()
+    kellys = list()
+
+    for i in range(len(probs)):
+        if (probs[i][1] > X_test_copy['MaxH'][i]**-1): #& (X_test_copy['MaxH'][i] < 1.25):
+            bal.append(bank)
+            kelly = (((X_test_copy['MaxH'][i] - 1) * (probs[i][1]) - (1 - probs[i][1]))/float(X_test_copy['MaxH'][i] - 1))*0.5
+
+            if kelly < 1: # Defunct code that can be used to cap the kelly proportion
+                stake = kelly*bank
+                stakes.append(stake)
+                kellys.append(kelly)
+                if X_test_copy['Res'][i] == 'H':
+                    bank = bank + (X_test_copy['MaxH'][i] - 1)*stake
+                else:
+                    bank = bank - stake
+            else:
+                stake = 0.1 * bank
+                stakes.append(stake)
+                kellys.append(0.1)
+                if X_test_copy['Res'][i] == 'H':
+                    bank = bank + (X_test_copy['MaxH'][i] - 1) * stake
+                else:
+                    bank = bank - stake
+
+        else:
+            bank = bank
+    returns.append(float(bank - 1000)/1000)
+
 
 
 
