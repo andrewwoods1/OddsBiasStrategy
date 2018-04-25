@@ -55,19 +55,22 @@ for a,b in zip(tab.ix[:,2], tab.index):
 # Simulate betting on all home wins which have odds of in lower 'value' range (<=1.25)
 
 bank = 1000
-df_h = df[df['MaxH']<=1.25]
-df_h = df_h.reset_index()
-bal = list()
-res = df_h['Res']
-
-for i in range(len(df_h)):
+bal = [bank]
+for i in range(len(df)):
     stake = bank*0.1
-    if res[i] == 'H':
-        bank = bank + (df_h['MaxH'].iloc[i]-1)*stake
+    if df['MaxH'][i] <= 1.25:
+        if df['Res'][i] == 'H':
+            bank = bank + (df['MaxH'][i]-1)*stake
+        else:
+            bank = bank - stake
     else:
-        bank = bank - stake
+        bank = bank
     bal.append(bank)
 
+plt.plot(range(len(bal)),bal,'--')
+plt.title("Bank vs Bet No.")
+plt.xlabel("Bet")
+plt.ylabel("Balance")
 plt.plot(range(len(bal)),bal,'--')
 plt.title("Bank vs Bet No.")
 plt.xlabel("Bet")
