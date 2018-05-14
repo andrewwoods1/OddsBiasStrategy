@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-path = "C:\\Users\\a0687383\\Downloads\\IRL.csv"
+#path = "C:\Downloads\\IRL.csv"
 df = pd.read_csv(path)
 
 
